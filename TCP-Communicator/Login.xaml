@@ -1,0 +1,19 @@
+﻿<Window x:Class="TCP_Communicator.Login"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TCP_Communicator"
+        mc:Ignorable="d"
+        Title="Login" Height="300" Width="300">
+    <Grid>
+        <TextBox x:Name="destinationTextBox" Height="23" Margin="162,81,10,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Label x:Name="label" Content="Destination IP&#xD;&#xA;" HorizontalAlignment="Left" Margin="10,81,0,0" VerticalAlignment="Top" Height="23"/>
+        <TextBox x:Name="nicknameTextBox" Height="23" Margin="162,109,10,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Label x:Name="label_Copy" Content="Nickname&#xA;" HorizontalAlignment="Left" Margin="10,109,0,0" VerticalAlignment="Top" Height="23"/>
+        <TextBox x:Name="listenerTextBox" Height="23" Margin="162,137,10,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Label x:Name="label_Copy1" Content="Listener IP&#xA;" HorizontalAlignment="Left" Margin="10,137,0,0" VerticalAlignment="Top" Height="23"/>
+        <Button x:Name="button" Content="OK" Margin="162,165,10,0" VerticalAlignment="Top" Height="23" Click="button_Click"/>
+
+    </Grid>
+</Window>
