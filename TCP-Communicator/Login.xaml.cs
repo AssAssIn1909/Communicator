@@ -15,7 +15,7 @@ namespace TCP_Communicator
         private void button_Click(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.IPDestination = destinationTextBox.Text;
-            Properties.Settings.Default.IPListener = listenerTextBox.Text;
+            //Properties.Settings.Default.IPListener = listenerTextBox.Text;
             Properties.Settings.Default.Nickname = nicknameTextBox.Text;
 
             MainWindow mw = new MainWindow();

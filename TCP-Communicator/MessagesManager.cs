@@ -17,12 +17,14 @@ namespace TCP_Communicator
     {
         public ObservableCollection<Message> MessageList;
         private DataGrid dataListBox;
+        MainWindow mW;
 
-        public MessagesManager(DataGrid listbox)
+        public MessagesManager(DataGrid listbox, MainWindow _mW)
         {
             MessageList = new ObservableCollection<Message>();
             dataListBox = listbox;
             dataListBox.ItemsSource = MessageList;
+            mW = _mW;
         }
 
         /// <summary>
@@ -41,6 +43,7 @@ namespace TCP_Communicator
                     scrollViewer.ScrollToBottom();
                     dataListBox.SelectedIndex = dataListBox.Items.Count - 1;
                 }
+                mW.UpdateLayout();
             }));
             
         }
@@ -54,21 +57,39 @@ namespace TCP_Communicator
             String[] messageArray = { Properties.Settings.Default.Nickname, message };
             Message messageToSent = new Message(messageArray[0], messageArray[1], MessageStatus.Sending);
             AddMessage(messageToSent);
-            int messageIndex = MessageList.IndexOf(messageToSent);
 
-            try
+            Thread t =new Thread(new ThreadStart(new Action(() =>
             {
-                TcpClient client = new TcpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
+                try
+                {
+                    TcpClient client = new TcpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
 
-                Byte[] data = Encoding.ASCII.GetBytes(arrayToJson(messageArray));
+                    Byte[] data = Encoding.ASCII.GetBytes(arrayToJson(messageArray));
 
-                NetworkStream stream = client.GetStream();
-                stream.Write(data, 0, data.Length);
+                    NetworkStream stream = client.GetStream();
+                    stream.Write(data, 0, data.Length);
+
+                    dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                    {
+                        int messageIndex = MessageList.IndexOf(messageToSent);
+                        MessageList[messageIndex].MessageStatus = MessageStatus.Sent;
+                        mW.UpdateLayout();
+                    }));
+                }
+                catch (SocketException e)
+                {
+                    dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                    {
+                        int messageIndex = MessageList.IndexOf(messageToSent);
+                        MessageList[messageIndex].MessageStatus = MessageStatus.Error;
+                        mW.UpdateLayout();
+                    }));
+
+                   
+                }
             }
-            catch (SocketException e)
-            {
-                MessageList[messageIndex].MessageStatus = MessageStatus.Error;
-            }
+            )));
+            t.Start();
         }
 
         
@@ -82,7 +103,7 @@ namespace TCP_Communicator
             {
                 IPAddress listener;
                 IPAddress.TryParse(Properties.Settings.Default.IPListener, out listener);
-                server = new TcpListener(/*IPAddress.Any*/listener, Properties.Settings.Default.Port);
+                server = new TcpListener(IPAddress.Any, Properties.Settings.Default.Port);
 
                 server.Start();
                 Byte[] bytes = new Byte[1024];

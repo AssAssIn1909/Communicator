@@ -13,7 +13,7 @@ namespace TCP_Communicator
         public MainWindow()
         {
             InitializeComponent();
-            messagesManager = new MessagesManager(dataGrid);
+            messagesManager = new MessagesManager(dataGrid, this);
             Thread threadMessageListener = new Thread(new ThreadStart(messagesManager.Listener));
 
             threadMessageListener.Start();
@@ -23,7 +23,7 @@ namespace TCP_Communicator
         {
             messagesManager.SendMessage(messageTextBox.Text);
             messageTextBox.Clear();
-            this.UpdateLayout();
+            //this.UpdateLayout();
         }
     }
 }
