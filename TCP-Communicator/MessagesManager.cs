@@ -31,7 +31,7 @@ namespace TCP_Communicator
         /// <param name="message">Message to display</param>
         public void AddMessage(Message message)
         {
-            dataListBox.Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+            dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
             {
                 MessageList.Add(message);
                 if (VisualTreeHelper.GetChildrenCount(dataListBox) > 0)
@@ -51,23 +51,23 @@ namespace TCP_Communicator
         /// <param name="message">Message to send</param>
         public void SendMessage(String message)
         {
+            String[] messageArray = { Properties.Settings.Default.Nickname, message };
+            Message messageToSent = new Message(messageArray[0], messageArray[1], MessageStatus.Sending);
+            AddMessage(messageToSent);
+            int messageIndex = MessageList.IndexOf(messageToSent);
+
             try
             {
                 TcpClient client = new TcpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
-
-                String[] messageArray = { Properties.Settings.Default.Nickname, message };
 
                 Byte[] data = Encoding.ASCII.GetBytes(arrayToJson(messageArray));
 
                 NetworkStream stream = client.GetStream();
                 stream.Write(data, 0, data.Length);
-
-                AddMessage(new Message(messageArray[0], messageArray[1], MessageStatus.Error));
-
             }
             catch (SocketException e)
             {
-                MessageBox.Show(e.ToString(), "Error", MessageBoxButton.OK);
+                MessageList[messageIndex].MessageStatus = MessageStatus.Error;
             }
         }
 
@@ -82,7 +82,7 @@ namespace TCP_Communicator
             {
                 IPAddress listener;
                 IPAddress.TryParse(Properties.Settings.Default.IPListener, out listener);
-                server = new TcpListener(IPAddress.Any, Properties.Settings.Default.Port);
+                server = new TcpListener(/*IPAddress.Any*/listener, Properties.Settings.Default.Port);
 
                 server.Start();
                 Byte[] bytes = new Byte[1024];
