@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Windows;
 
-namespace TCP_Communicator
+namespace Communicator
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

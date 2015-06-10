@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace TCP_Communicator
+namespace Communicator
 {
     /// <summary>
     /// Interaction logic for Login.xaml

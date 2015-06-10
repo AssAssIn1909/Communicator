@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Windows.Data;
 
-namespace TCP_Communicator
+namespace Communicator
 {
     class StatusToImageConverter : IValueConverter
     {

@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace TCP_Communicator
+namespace Communicator
 {
     class MessagesManager
     {
@@ -57,24 +57,25 @@ namespace TCP_Communicator
             String[] messageArray = { Properties.Settings.Default.Nickname, message };
             Message messageToSent = new Message(messageArray[0], messageArray[1], MessageStatus.Sending);
             AddMessage(messageToSent);
-
-            Thread t =new Thread(new ThreadStart(new Action(() =>
+            new Thread(new ThreadStart(new Action(() => 
             {
                 try
                 {
-                    TcpClient client = new TcpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
+                    UdpClient client = new UdpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
 
                     Byte[] data = Encoding.ASCII.GetBytes(arrayToJson(messageArray));
 
-                    NetworkStream stream = client.GetStream();
-                    stream.Write(data, 0, data.Length);
+                    client.Send(data, data.Length);
 
+                    Thread.Sleep(2000);
                     dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                     {
                         int messageIndex = MessageList.IndexOf(messageToSent);
                         MessageList[messageIndex].MessageStatus = MessageStatus.Sent;
-                        mW.UpdateLayout();
+                        mW.dataGrid.Items.Refresh();
+                        //mW.UpdateLayout();
                     }));
+
                 }
                 catch (SocketException e)
                 {
@@ -84,12 +85,10 @@ namespace TCP_Communicator
                         MessageList[messageIndex].MessageStatus = MessageStatus.Error;
                         mW.UpdateLayout();
                     }));
-
-                   
                 }
             }
-            )));
-            t.Start();
+            ))).Start();
+            
         }
 
         
@@ -98,7 +97,7 @@ namespace TCP_Communicator
         /// </summary>
         public void Listener()
         {
-            TcpListener server = null;
+            /*TcpListener server = null;
             try
             {
                 IPAddress listener;
@@ -127,6 +126,19 @@ namespace TCP_Communicator
             finally
             {
                 server.Stop();
+            }*/
+            UdpClient udpServer = new UdpClient(Properties.Settings.Default.Port);
+            var remoteEP = new IPEndPoint(IPAddress.Any, Properties.Settings.Default.Port);
+            while (true)
+            {
+                byte[] bytes = udpServer.Receive(ref remoteEP);
+                string data = Encoding.ASCII.GetString(bytes);
+                using (MemoryStream memoryStream = new MemoryStream(Encoding.Default.GetBytes(data)))
+                {
+                    DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(string[]));
+                    string[] messageString = serializer.ReadObject(memoryStream) as string[];
+                    AddMessage(new Message(messageString[0], messageString[1], MessageStatus.Sent));
+                }
             }
         }
         /// <summary>

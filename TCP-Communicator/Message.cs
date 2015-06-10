@@ -1,4 +1,4 @@
-﻿namespace TCP_Communicator
+﻿namespace Communicator
 {
     class Message
     {
