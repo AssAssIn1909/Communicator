@@ -57,76 +57,39 @@ namespace Communicator
             String[] messageArray = { Properties.Settings.Default.Nickname, message };
             Message messageToSent = new Message(messageArray[0], messageArray[1], MessageStatus.Sending);
             AddMessage(messageToSent);
-            new Thread(new ThreadStart(new Action(() => 
+            try
             {
-                try
+                UdpClient client = new UdpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
+
+                Byte[] data = Encoding.ASCII.GetBytes(arrayToJson(messageArray));
+
+                client.Send(data, data.Length);
+
+                dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
                 {
-                    UdpClient client = new UdpClient(Properties.Settings.Default.IPDestination, Properties.Settings.Default.Port);
+                    int messageIndex = MessageList.IndexOf(messageToSent);
+                    MessageList[messageIndex].MessageStatus = MessageStatus.Sent;
+                    mW.dataGrid.Items.Refresh();
+                    //mW.UpdateLayout();
+                }));
 
-                    Byte[] data = Encoding.ASCII.GetBytes(arrayToJson(messageArray));
-
-                    client.Send(data, data.Length);
-
-                    Thread.Sleep(2000);
-                    dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                    {
-                        int messageIndex = MessageList.IndexOf(messageToSent);
-                        MessageList[messageIndex].MessageStatus = MessageStatus.Sent;
-                        mW.dataGrid.Items.Refresh();
-                        //mW.UpdateLayout();
-                    }));
-
-                }
-                catch (SocketException e)
-                {
-                    dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
-                    {
-                        int messageIndex = MessageList.IndexOf(messageToSent);
-                        MessageList[messageIndex].MessageStatus = MessageStatus.Error;
-                        mW.UpdateLayout();
-                    }));
-                }
             }
-            ))).Start();
-            
+            catch (SocketException e)
+            {
+                dataListBox.Dispatcher.Invoke(DispatcherPriority.Send, new Action(() =>
+                {
+                    int messageIndex = MessageList.IndexOf(messageToSent);
+                    MessageList[messageIndex].MessageStatus = MessageStatus.Error;
+                    mW.UpdateLayout();
+                }));
+            }
         }
-
         
         /// <summary>
         /// 
         /// </summary>
         public void Listener()
         {
-            /*TcpListener server = null;
-            try
-            {
-                IPAddress listener;
-                IPAddress.TryParse(Properties.Settings.Default.IPListener, out listener);
-                server = new TcpListener(IPAddress.Any, Properties.Settings.Default.Port);
-
-                server.Start();
-                Byte[] bytes = new Byte[1024];
-                while (true)
-                {
-                    TcpClient client = server.AcceptTcpClient();
-                    NetworkStream stream = client.GetStream();
-                    int i;
-                    if ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
-                    {
-                        AddMessage(jsonToArray(bytes, i));
-                    }
-                    client.Close();
-                    Thread.Sleep(10);
-                }
-            }
-            catch (SocketException e)
-            {
-                MessageBox.Show(e.ToString(), "Error", MessageBoxButton.OK);
-            }
-            finally
-            {
-                server.Stop();
-            }*/
             UdpClient udpServer = new UdpClient(Properties.Settings.Default.Port);
             var remoteEP = new IPEndPoint(IPAddress.Any, Properties.Settings.Default.Port);
             while (true)

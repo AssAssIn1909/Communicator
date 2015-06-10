@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using System.Windows;
 
 namespace Communicator
@@ -21,7 +22,13 @@ namespace Communicator
 
         private void sendButton_Click(object sender, RoutedEventArgs e)
         {
-            messagesManager.SendMessage(messageTextBox.Text);
+            string st;
+            using (StreamReader sr = new StreamReader("tttt.txt"))
+            {
+                st = sr.ReadToEnd();
+            }
+            
+            messagesManager.SendMessage(st);
             messageTextBox.Clear();
             //this.UpdateLayout();
         }
